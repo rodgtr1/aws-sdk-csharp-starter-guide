@@ -30,26 +30,27 @@ namespace app
             awsOptions = awsOptionsMonitor.CurrentValue;
             awsOptionsMonitor.OnChange(o => awsOptions = o);
 
-            var options = new CredentialProfileOptions
-            {
-                AccessKey = awsOptions.AWSAccessKey,
-                SecretKey = awsOptions.AWSSecretKey
-            };
-
-            profile = new CredentialProfile("test-profile", options);
-            profile.Region = RegionEndpoint.USEast1;
-
-            var sharedFile = new SharedCredentialsFile();
-            sharedFile.RegisterProfile(profile);
-
             var chain = new CredentialProfileStoreChain();
+
             if (chain.TryGetAWSCredentials("test-profile", out awsCredentials))
             {
                 logger.LogInformation("Credentials profile found...");
             }
             else
             {
-                logger.LogError("Could not find credentials profile...");
+                logger.LogInformation("Could not find credentials profile. Creating...");
+            
+                var options = new CredentialProfileOptions
+                {
+                    AccessKey = awsOptions.AWSAccessKey,
+                    SecretKey = awsOptions.AWSSecretKey
+                };
+
+                profile = new CredentialProfile("test-profile", options);
+                profile.Region = RegionEndpoint.USEast1;
+
+                var sharedFile = new SharedCredentialsFile();
+                sharedFile.RegisterProfile(profile);
             }
         }
 
